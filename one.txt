@@ -1,3 +1,5 @@
+.\.venv\Scripts\activate
+
 langchain means they connect between models and us
 
 
