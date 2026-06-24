@@ -1,0 +1,7 @@
+langchain means they connect between models and us
+
+
+invoke variable seen my api key which is in my .env file and it check you have permission or not .
+
+
+
