@@ -7,3 +7,15 @@ invoke variable seen my api key which is in my .env file and it check you have p
 
 
 
+
+
+embedding have two types : 
+
+thier can be local embedding and 
+thier can be open ai based embedding 
+
+when we are using open source models we are going to use local embedding 
+when we are using paid models we are going to use open ai based embedding 
+
+if we created once < then it is an vector .. 
+
