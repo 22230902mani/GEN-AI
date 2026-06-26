@@ -75,103 +75,119 @@
 
 
 
+#sir github code
 
 
-import streamlit as st
+# MovieSage AI bot
+# 1 take a raw para about a movie
+# 2 Extract important sturtured info
+# 3 Generate a clean summary
+# 4 Returns it into JSON Format
+
 from dotenv import load_dotenv
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_mistralai import ChatMistralAI
 
 load_dotenv()
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_mistralai import ChatMistralAI
+from langchain.output_parsers import PydanticOutputParser
+from pydantic import BaseModel
+from typing import List,Optional
 
-st.set_page_config(
-page_title="Movie Sage AI",
-page_icon="🎬",
-layout="wide"
-)
+model = ChatMistralAI(model="mistral-small-2603")
 
-st.markdown("""
+#from langchain_core.prompts import ChatPromptTemplate
 
-<style>
-.main {
-    background: linear-gradient(135deg,#0f172a,#1e293b);
-}
-.stTextArea textarea {
-    border-radius: 12px;
-}
-.result-box {
-    padding:20px;
-    border-radius:15px;
-    background:#111827;
-    border:1px solid #374151;
-}
-.title {
-    text-align:center;
-    font-size:3rem;
-    font-weight:bold;
-    color:white;
-}
-.subtitle {
-    text-align:center;
-    color:#cbd5e1;
-}
-</style>
 
-""", unsafe_allow_html=True)
+class Movie(BaseModel):
+    title: str
+    genre: str
+    director: str
+    writers: List[str]
+    producers: List[str]
+    cast: List[str]
+    release_year: Optional[int]
+    runtime: Optional[str]
+    language: Optional[str]
+    country: Optional[str]
+    plot_summary: str
+    main_characters: List[str]
+    themes: List[str]
+    notable_facts: List[str]
+    awards: List[str]
+    box_office: Optional[str]
+    rating: Optional[str]
+    keywords: List[str]
 
-st.markdown('<p class="title">🎬 Movie Sage AI</p>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">AI Movie Analyst & Information Extractor</p>', unsafe_allow_html=True)
+parser = PydanticOutputParser(pydantic_object=Movie)
 
-model = ChatMistralAI(
-model="mistral-small-2603",
-temperature=0
-)
-
-prompt = ChatPromptTemplate.from_messages([
-(
-"system",
-"""
-You are MovieSage AI.
+prompt = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            """
+You are MovieSage AI, an expert movie analyst and information extraction assistant.
 
 ```
-    Extract:
+    Your responsibilities:
+
+    1. Carefully read and understand the entire movie description.
+    2. Extract all important movie-related information.
+    3. Generate a concise and engaging plot summary.
+    4. Identify key characters, themes, and notable facts.
+    5. Extract factual information only from the provided text.
+    6. If information is not available, return null.
+    7. Never hallucinate or invent details.
+    8. Return ONLY valid JSON.
+    9. Do not include markdown, explanations, comments, or additional text.
+
+    Extract the following fields:
+
     - title
     - genre
     - director
-    - release_year
+    - writers
+    - producers
     - cast
-    - summary
+    - release_year
+    - runtime
+    - language
+    - country
+    - plot_summary
+    - main_characters
+    - themes
+    - notable_facts
+    - awards
+    - box_office
+    - rating
+    - keywords
 
-    Return ONLY valid JSON.
-    """
-),
-("human", "{movie_text}")
+    
+    """,
+        ),
+        (
+            "human",
+            """
+    Analyze the following movie description and extract all relevant information.
 
-
-])
-
-chain = prompt | model
-
-movie_text = st.text_area(
-"Enter Movie Description",
-height=250,
-placeholder="Paste movie information here..."
+    Movie Description:
+    {movie_description}
+    """,
+        ),
+    ]
 )
 
-if st.button("Analyze Movie", use_container_width=True):
-    if movie_text.strip():
+para = input("give your paragraph")
+final_prompt = prompt.invoke({
+                                "movie_description": para,
+                                "format_instructions":parser.get_format_instructions()
+                            })
+
+res = model.invoke(final_prompt)
+print(res.content)
 
 
-        with st.spinner("Analyzing Movie..."):
+#AI->JSON->Backend->API->Frontend->
 
-            response = chain.invoke({
-            "movie_text": movie_text
-        })
 
-    st.success("Analysis Complete")
 
-    st.subheader("JSON Output")
-    st.code(response.content, language="json")
 
-else:
-    st.warning("Please enter a movie description.")

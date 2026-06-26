@@ -19,3 +19,4 @@ when we are using paid models we are going to use open ai based embedding
 
 if we created once < then it is an vector .. 
 
+
